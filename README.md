@@ -21,17 +21,21 @@ function main(){
 
 
 # Documentation Table of Contents 
-* [main](#main)
-* [createWebGlContext](#createWebGlContext)
-* [createProgramWebGL](#createProgramWebGL)
-* [impelementBuffers](#impelementBuffers)
-* [setFrameBuffer](#setFrameBuffer)
-* [createFramebufferObject](#createFramebufferObject)
-* [checkProgramLocation](#checkProgramLocation)
+ 
+### HTMLCanvasElement <br>
+- [main](#main)<br>
+
+### WebGLRenderingContext <br>
+- [createWebGlContext](#createWebGlContext)<br>
+- [createProgramWebGL](#createProgramWebGL)<br>
+- [impelementBuffers](#impelementBuffers)<br>
+- [setFrameBuffer](#setFrameBuffer)<br>
+- [createFramebufferObject](#createFramebufferObject)<br>
+- [checkProgramLocation](#checkProgramLocation)<br>
  
 
 
-## main
+### main
 
 main function just need to define it's will calling auto in webglutils!
 ```html
@@ -43,7 +47,7 @@ function main(){
 }
 ```
 
-## createWebGlContext()
+### createWebGlContext()
 
 ```html
 function main(){
@@ -53,20 +57,7 @@ function main(){
   ...
 }
 ```
-## createProgramWebGL()
-
-```html
-function main(){
-  let canvas = document.getElementById("canvas");
-  gl = canvas.createWebGlContext();
- 
-  ...
-}
-```
-
-
-
-## impelementBuffers()
+### createProgramWebGL()
 
 ```html
 function main(){
@@ -78,7 +69,8 @@ function main(){
 ```
 
 
-## setFrameBuffer()
+
+### impelementBuffers()
 
 ```html
 function main(){
@@ -89,7 +81,8 @@ function main(){
 }
 ```
 
-## createFramebufferObject()
+
+### setFrameBuffer()
 
 ```html
 function main(){
@@ -100,7 +93,7 @@ function main(){
 }
 ```
 
-## background()
+### createFramebufferObject()
 
 ```html
 function main(){
@@ -111,7 +104,18 @@ function main(){
 }
 ```
 
-## checkProgramLocation()
+### background()
+
+```html
+function main(){
+  let canvas = document.getElementById("canvas");
+  gl = canvas.createWebGlContext();
+ 
+  ...
+}
+```
+
+### checkProgramLocation()
 
 
 
