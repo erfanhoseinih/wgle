@@ -350,7 +350,6 @@ const WebGLUtils = {
 }
  
 Object.keys(WebGLUtils).forEach(e => {
-    console.log(e)
     WebGL2RenderingContext.prototype[e] = WebGLUtils[e];
     WebGLRenderingContext.prototype[e] = WebGLUtils[e];
 })
