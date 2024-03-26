@@ -2,7 +2,7 @@
   "name": "@erfanhoseinih/webglutils",
   "version": "1.0.0",
   "description": "webgl utils",
-  "main": "index.js",
+  "main": "webglutils.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
