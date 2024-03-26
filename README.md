@@ -21,8 +21,14 @@ function main(){
 
 
 # Documentation Table of Contents 
-[main](#main)
-[background](#background)
+* [main](#main)
+* [createWebGlContext](#createWebGlContext)
+* [createProgramWebGL](#createProgramWebGL)
+* [impelementBuffers](#impelementBuffers)
+* [setFrameBuffer](#setFrameBuffer)
+* [createFramebufferObject](#createFramebufferObject)
+* [checkProgramLocation](#checkProgramLocation)
+ 
 
 
 ## main
