@@ -70,7 +70,6 @@ let glslAttriTypeStrings = [
 ]
 let glslUniTypeStrings = [
 
-
     "uniform bool",
     "uniform int",
     "uniform float",
@@ -95,9 +94,9 @@ let glslUniTypeStrings = [
     "uniform samplerCube"
 
 ];
+const WebGLUtils = {
 
-WebGLRenderingContext.prototype.createProgramWebGL =
-    WebGL2RenderingContext.prototype.createProgramWebGL = function (vertCode, fragCode) {
+    createProgramWebGL : function (vertCode, fragCode) {
 
         var vertexShader = this.createShader(this.VERTEX_SHADER);
         this.shaderSource(vertexShader, vertCode);
@@ -184,41 +183,19 @@ WebGLRenderingContext.prototype.createProgramWebGL =
         }
 
         return program;
-    }
+    },
 
-
-
-
-
-
-
-WebGLRenderingContext.prototype.impelementBuffers =
-    WebGL2RenderingContext.prototype.impelementBuffers = function (...args) {
-        args.forEach((e) => {
-            let buffer = this.createBuffer();
-            this.bindBuffer(this.ARRAY_BUFFER, buffer);
-            this.bufferData(this.ARRAY_BUFFER, new Float32Array(e[1]), this.STATIC_DRAW);
-            this.vertexAttribPointer(e[0], e[2], this.FLOAT, false, 0, 0);
-            this.enableVertexAttribArray(e[0]);
-        });
-
-    }
-
-
-WebGLRenderingContext.prototype.impelementBuffers_1 =
-    WebGL2RenderingContext.prototype.impelementBuffers_1 = function (args) {
+    impelementBuffers : function (args) {
         args.forEach((e) => {
             this.bindBuffer(this.ARRAY_BUFFER, e.buffer);
             this.vertexAttribPointer(e.loc, e.num, this.FLOAT, false, 0, 0);
             this.enableVertexAttribArray(e.loc);
         });
 
-    }
-
-
-
-WebGLRenderingContext.prototype.createArrayBuffer =
-    WebGL2RenderingContext.prototype.createArrayBuffer = function (loc, data, num, type) {
+    },
+    
+ 
+    createArrayBuffer : function (loc, data, num, type) {
         let obj = new Object();
         obj.buffer = this.createBuffer();
         this.bindBuffer(this.ARRAY_BUFFER, obj.buffer);
@@ -229,13 +206,9 @@ WebGLRenderingContext.prototype.createArrayBuffer =
         obj.len = parseInt(data.length / num);
         return obj;
 
-    }
+    },
 
-
-
-
-WebGLRenderingContext.prototype.background =
-    WebGL2RenderingContext.prototype.background = function (color_data) {
+    background : function (color_data) {
         if (gl.isEnabled(gl.BLEND)) {
             this.canvas.style.backgroundColor = `rgba( ${color_data[0]} , ${color_data[1]} , ${color_data[2]} ,1.0)`;
         } else {
@@ -243,12 +216,9 @@ WebGLRenderingContext.prototype.background =
         }
         this.clearColor(color_data[0] / 255, color_data[1] / 255, color_data[2] / 255, 1.0);
         this.clear(this.COLOR_BUFFER_BIT | this.DEPTH_BUFFER_BIT);
-    }
+    },
 
-
-
-WebGLRenderingContext.prototype.setFrameBuffer =
-    WebGL2RenderingContext.prototype.setFrameBuffer = function (fbo_gl) {
+    setFrameBuffer: function (fbo_gl) {
         if (fbo_gl == undefined && fbo_gl != null) {
             throw new SyntaxError("fbo is not selected");
         }
@@ -256,10 +226,9 @@ WebGLRenderingContext.prototype.setFrameBuffer =
         if (arguments.length > 1) {
             this.viewport(arguments[1], arguments[2], arguments[3], arguments[4])
         }
-    }
+    },
 
-WebGLRenderingContext.prototype.createFramebufferObject =
-    WebGL2RenderingContext.prototype.createFramebufferObject = function (fbo_w, fbo_h) {
+    createFramebufferObject : function (fbo_w, fbo_h) {
 
         var frameBuffer, texture, depthBuffer;
         let OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT;
@@ -306,13 +275,7 @@ WebGLRenderingContext.prototype.createFramebufferObject =
         this.framebufferRenderbuffer(this.FRAMEBUFFER, this.DEPTH_ATTACHMENT, this.RENDERBUFFER, depthBuffer);
 
 
-
-
-
-
-
-
-
+ 
 
 
         var e = this.checkFramebufferStatus(this.FRAMEBUFFER);
@@ -328,13 +291,9 @@ WebGLRenderingContext.prototype.createFramebufferObject =
 
         return frameBuffer;
 
-    }
-
-
-
-
-WebGLRenderingContext.prototype.checkProgramLocation =
-    WebGL2RenderingContext.prototype.checkProgramLocation = function (v) {
+    },
+ 
+    checkProgramLocation :function (v) {
         if (v == undefined || v == null || v < 0) {
             let e = new Error('Failed to get the storage location');
             e.stack = e.stack.slice(e.stack.indexOf("\n") + 1, e.stack.length);
@@ -347,21 +306,9 @@ WebGLRenderingContext.prototype.checkProgramLocation =
         } else {
             return true;
         }
-    }
-
-
-
-async function loadShaderFile(fileName) {
-    let data;
-    const response = await fetch(fileName);
-    if (!response.ok) throw new Error(response.status);
-    contents = async function () { return await response.text(); }
-    await contents().then(res => { data = res; })
-    return data;
-}
-
-WebGLRenderingContext.prototype.normalizeVertexForglsl =
-    WebGL2RenderingContext.prototype.normalizeVertexForglsl = function (v, step) {
+    },
+ 
+    normalizeVertexForglsl : function (v, step) {
         let vert = v;
         for (let jkm = 0; jkm < vert.length; jkm += step) {
             if (step == 2) {
@@ -380,12 +327,9 @@ WebGLRenderingContext.prototype.normalizeVertexForglsl =
 
         }
         return vert;
-    }
-
-
-
-WebGLRenderingContext.prototype.normalizeColorForglsl =
-    WebGL2RenderingContext.prototype.normalizeColorForglsl = function (v, step) {
+    },
+ 
+    normalizeColorForglsl : function (v, step) {
         let vert = v;
         for (let jkm = 0; jkm < vert.length; jkm += step) {
             for (let ikm = 0; ikm < step; ikm++) {
@@ -396,14 +340,17 @@ WebGLRenderingContext.prototype.normalizeColorForglsl =
 
         }
         return vert;
-    }
-
-
+    } 
+  
+};
 
 Object.keys(WebGLUtils).forEach(e => {
     WebGL2RenderingContext.prototype[e] = WebGLUtils[e];
     WebGLRenderingContext.prototype[e] = WebGLUtils[e];
 })
+ 
+
+ 
 
 
 function mainRunner() {
@@ -452,3 +399,15 @@ function mainRunner() {
 } mainRunner();
 
 
+
+
+ 
+async function loadShaderFile(fileName) {
+    let data;
+    const response = await fetch(fileName);
+    if (!response.ok) throw new Error(response.status);
+    contents = async function () { return await response.text(); }
+    await contents().then(res => { data = res; })
+    return data;
+}
+ 
