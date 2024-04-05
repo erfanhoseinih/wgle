@@ -399,6 +399,13 @@ WebGLRenderingContext.prototype.normalizeColorForglsl =
     }
 
 
+
+Object.keys(WebGLUtils).forEach(e => {
+    WebGL2RenderingContext.prototype[e] = WebGLUtils[e];
+    WebGLRenderingContext.prototype[e] = WebGLUtils[e];
+})
+
+
 function mainRunner() {
     try {
         window["main"]()
