@@ -70,6 +70,7 @@ let glslAttriTypeStrings = [
 ]
 let glslUniTypeStrings = [
 
+
     "uniform bool",
     "uniform int",
     "uniform float",
@@ -94,9 +95,9 @@ let glslUniTypeStrings = [
     "uniform samplerCube"
 
 ];
-const WebGLUtils = {
 
-    createProgramWebGL : function (vertCode, fragCode) {
+WebGLRenderingContext.prototype.createProgramWebGL =
+    WebGL2RenderingContext.prototype.createProgramWebGL = function (vertCode, fragCode) {
 
         var vertexShader = this.createShader(this.VERTEX_SHADER);
         this.shaderSource(vertexShader, vertCode);
@@ -124,11 +125,13 @@ const WebGLUtils = {
 
 
             var getLocString = (c, s) => {
+
                 let startStr;
                 let endStr;
                 if (c.indexOf(s) > -1) {
                     startStr = c.indexOf(s);
                     endStr = c.length;
+
                     let resulte = c.slice(startStr + s.length + 1, endStr);
                     return resulte;
                 }
@@ -181,30 +184,41 @@ const WebGLUtils = {
         }
 
         return program;
-    },
+    }
 
-    impelementBuffers : function (args) {
+
+
+
+
+
+
+WebGLRenderingContext.prototype.impelementBuffers =
+    WebGL2RenderingContext.prototype.impelementBuffers = function (...args) {
+        args.forEach((e) => {
+            let buffer = this.createBuffer();
+            this.bindBuffer(this.ARRAY_BUFFER, buffer);
+            this.bufferData(this.ARRAY_BUFFER, new Float32Array(e[1]), this.STATIC_DRAW);
+            this.vertexAttribPointer(e[0], e[2], this.FLOAT, false, 0, 0);
+            this.enableVertexAttribArray(e[0]);
+        });
+
+    }
+
+
+WebGLRenderingContext.prototype.impelementBuffers_1 =
+    WebGL2RenderingContext.prototype.impelementBuffers_1 = function (args) {
         args.forEach((e) => {
             this.bindBuffer(this.ARRAY_BUFFER, e.buffer);
             this.vertexAttribPointer(e.loc, e.num, this.FLOAT, false, 0, 0);
             this.enableVertexAttribArray(e.loc);
         });
 
-    },
-    
-    // impelementBuffers_1 : function (...args) {
-    //     args.forEach((e) => {
-    //         let buffer = this.createBuffer();
-    //         this.bindBuffer(this.ARRAY_BUFFER, buffer);
-    //         this.bufferData(this.ARRAY_BUFFER, new Float32Array(e[1]), this.STATIC_DRAW);
-    //         this.vertexAttribPointer(e[0], e[2], this.FLOAT, false, 0, 0);
-    //         this.enableVertexAttribArray(e[0]);
-    //     });
-
-    // },
+    }
 
 
-    createArrayBuffer : function (loc, data, num, type) {
+
+WebGLRenderingContext.prototype.createArrayBuffer =
+    WebGL2RenderingContext.prototype.createArrayBuffer = function (loc, data, num, type) {
         let obj = new Object();
         obj.buffer = this.createBuffer();
         this.bindBuffer(this.ARRAY_BUFFER, obj.buffer);
@@ -215,9 +229,13 @@ const WebGLUtils = {
         obj.len = parseInt(data.length / num);
         return obj;
 
-    },
+    }
 
-    background : function (color_data) {
+
+
+
+WebGLRenderingContext.prototype.background =
+    WebGL2RenderingContext.prototype.background = function (color_data) {
         if (gl.isEnabled(gl.BLEND)) {
             this.canvas.style.backgroundColor = `rgba( ${color_data[0]} , ${color_data[1]} , ${color_data[2]} ,1.0)`;
         } else {
@@ -225,9 +243,12 @@ const WebGLUtils = {
         }
         this.clearColor(color_data[0] / 255, color_data[1] / 255, color_data[2] / 255, 1.0);
         this.clear(this.COLOR_BUFFER_BIT | this.DEPTH_BUFFER_BIT);
-    },
+    }
 
-    setFrameBuffer: function (fbo_gl) {
+
+
+WebGLRenderingContext.prototype.setFrameBuffer =
+    WebGL2RenderingContext.prototype.setFrameBuffer = function (fbo_gl) {
         if (fbo_gl == undefined && fbo_gl != null) {
             throw new SyntaxError("fbo is not selected");
         }
@@ -235,9 +256,10 @@ const WebGLUtils = {
         if (arguments.length > 1) {
             this.viewport(arguments[1], arguments[2], arguments[3], arguments[4])
         }
-    },
+    }
 
-    createFramebufferObject : function (fbo_w, fbo_h) {
+WebGLRenderingContext.prototype.createFramebufferObject =
+    WebGL2RenderingContext.prototype.createFramebufferObject = function (fbo_w, fbo_h) {
 
         var frameBuffer, texture, depthBuffer;
         let OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT;
@@ -287,6 +309,12 @@ const WebGLUtils = {
 
 
 
+
+
+
+
+
+
         var e = this.checkFramebufferStatus(this.FRAMEBUFFER);
         if (this.FRAMEBUFFER_COMPLETE !== e) {
             console.log('Frame buffer object is incomplete: ' + e.toString());
@@ -300,9 +328,13 @@ const WebGLUtils = {
 
         return frameBuffer;
 
-    },
- 
-    checkProgramLocation :function (v) {
+    }
+
+
+
+
+WebGLRenderingContext.prototype.checkProgramLocation =
+    WebGL2RenderingContext.prototype.checkProgramLocation = function (v) {
         if (v == undefined || v == null || v < 0) {
             let e = new Error('Failed to get the storage location');
             e.stack = e.stack.slice(e.stack.indexOf("\n") + 1, e.stack.length);
@@ -315,9 +347,21 @@ const WebGLUtils = {
         } else {
             return true;
         }
-    },
- 
-    normalizeVertexForglsl : function (v, step) {
+    }
+
+
+
+async function loadShaderFile(fileName) {
+    let data;
+    const response = await fetch(fileName);
+    if (!response.ok) throw new Error(response.status);
+    contents = async function () { return await response.text(); }
+    await contents().then(res => { data = res; })
+    return data;
+}
+
+WebGLRenderingContext.prototype.normalizeVertexForglsl =
+    WebGL2RenderingContext.prototype.normalizeVertexForglsl = function (v, step) {
         let vert = v;
         for (let jkm = 0; jkm < vert.length; jkm += step) {
             if (step == 2) {
@@ -327,14 +371,21 @@ const WebGLUtils = {
                 vert[jkm] = vert[jkm] / width * 2 - 1;
                 vert[jkm + 1] = vert[jkm + 1] / height * 2 - 1;
                 vert[jkm + 2] = vert[jkm + 2] / (((height + width) / 2) * 2) - 1;
+            } else if (step == 4) {
+                vert[jkm] = vert[jkm] / width * 2 - 1;
+                vert[jkm + 1] = vert[jkm + 1] / height * 2 - 1;
+                vert[jkm + 2] = vert[jkm + 2] / (((height + width) / 2) * 2) - 1;
             }
 
 
         }
         return vert;
-    },
- 
-    normalizeColorForglsl : function (v, step) {
+    }
+
+
+
+WebGLRenderingContext.prototype.normalizeColorForglsl =
+    WebGL2RenderingContext.prototype.normalizeColorForglsl = function (v, step) {
         let vert = v;
         for (let jkm = 0; jkm < vert.length; jkm += step) {
             for (let ikm = 0; ikm < step; ikm++) {
@@ -345,16 +396,9 @@ const WebGLUtils = {
 
         }
         return vert;
-    } 
-  
-}
- 
-Object.keys(WebGLUtils).forEach(e => {
-    console.log(e)
-    WebGL2RenderingContext.prototype[e] = WebGLUtils[e];
-    WebGLRenderingContext.prototype[e] = WebGLUtils[e];
-})
- 
+    }
+
+
 function mainRunner() {
     try {
         window["main"]()
@@ -363,26 +407,41 @@ function mainRunner() {
         if (e.message == "window.main is not a function") {
             requestAnimationFrame(mainRunner)
         } else {
-            let err = e;
-            if (err.stack) {
-                err.stack = err.stack.slice(0, err.stack.indexOf("\n") + 1);
+
+
+
+            let stack = e.stack;
+            let indexStr0 = stack.search("at mainRunner");
+            if (indexStr0 < 0) {
+                indexStr0 = stack.search("mainRunner");
             }
+            stack = stack.slice(0, indexStr0);
+
+
+            let linenumber;
+            let indexStr = e.stack.search(".js");
+            let filename = e.stack.slice(0, e.stack.indexOf("\n"));
+            while (!(filename[indexStr] == "/" || filename[indexStr] == "(") && indexStr >= 0) { indexStr--; }
+
+            filename = filename.slice(indexStr + 1, filename.length)
+
+            indexStr = filename.search(":");
+            linenumber = filename.slice(indexStr + 1, filename.length)
+            filename = filename.slice(0, indexStr)
+
+
+            indexStr = linenumber.search(":");
+            linenumber = linenumber.slice(0, indexStr)
+
+
+            let err = new Error(e.message, filename, linenumber);
+            err.stack = stack
+
             cancelAnimationFrame(mainRunner)
             throw err;
 
         }
     }
 } mainRunner();
-
- 
-async function loadShaderFile(fileName) {
-    let data;
-    const response = await fetch(fileName);
-    if (!response.ok) throw new Error(response.status);
-    contents = async function () { return await response.text(); }
-    await contents().then(res => { data = res; })
-    return data;
-}
- 
 
 
