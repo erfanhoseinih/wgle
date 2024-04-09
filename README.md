@@ -22,10 +22,9 @@ function main(){
 
 # Documentation Table of Contents 
  
-### HTMLCanvasElement <br>
-- [main](#main)<br>
 
 ### WebGLRenderingContext <br>
+- [main](#main)<br>
 - [createWebGlContext](#createWebGlContext)<br>
 - [createProgramWebGL](#createProgramWebGL)<br>
 - [impelementBuffers](#impelementBuffers)<br>
@@ -49,6 +48,8 @@ function main(){
 
 ### createWebGlContext()
 
+createWebGlContext() create webgl context 
+
 ```html
 function main(){
   let canvas = document.getElementById("canvas");
@@ -57,6 +58,28 @@ function main(){
   ...
 }
 ```
+
+get parametr width and height 
+```html
+function main(){
+  let canvas = document.getElementById("canvas");
+  
+  gl = canvas.createWebGlContext(300,200);
+ 
+  ...
+}
+```
+
+and get attribute webgl context 
+```html
+function main(){
+  let canvas = document.getElementById("canvas");
+  gl = canvas.createWebGlContext(300,200,{alpha:true});
+ 
+  ...
+}
+```
+
 ### createProgramWebGL()
 
 ```html
