@@ -120,10 +120,13 @@ void main(){
 function main(){
   let canvas = document.getElementById("canvas");
   let gl = canvas.createWebGlContext();
+
+
   let program = gl.createProgramWebGL(vShader,fShader);
 
+  program.getProgramLocations(); // finding program locations
+ 
   gl.useProgram(program);
-
   program.a_Position // attribute location value
   program.u_alpha // uniform location value
   ...
