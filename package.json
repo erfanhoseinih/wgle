@@ -1,10 +1,14 @@
 {
   "name": "@erfanhoseinih/webglutils",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "webgl utils",
   "main": "webglutils.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erfannhoseini/webglutils"
   },
   "keywords": ["webgl","utils"],
   "author": "erfanhoseini",
