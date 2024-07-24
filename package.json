@@ -10,7 +10,13 @@
     "type": "git",
     "url": "https://github.com/erfannhoseini/webglutils"
   },
-  "keywords": ["webgl","utils"],
+  "keywords": [
+    "webgl",
+    "utils"
+  ],
   "author": "erfanhoseini",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@erfanhoseinih/webglutils": "^1.0.3"
+  }
 }

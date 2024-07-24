@@ -94,14 +94,18 @@ let glslUniTypeStrings = [
     "uniform samplerCube"
 
 ];
-const WebGLUtils = {
+
+
+
+
+const WebGLContextUtils = {
 
     createProgramWebGL: function (vertCode, fragCode) {
 
         var vertexShader = this.createShader(this.VERTEX_SHADER);
+
         this.shaderSource(vertexShader, vertCode);
         this.compileShader(vertexShader);
-
         var fragmentShader = this.createShader(this.FRAGMENT_SHADER);
         this.shaderSource(fragmentShader, fragCode);
         this.compileShader(fragmentShader);
@@ -112,6 +116,8 @@ const WebGLUtils = {
         this.attachShader(program, fragmentShader);
 
         this.linkProgram(program);
+        program.vertCode = vertCode.split("\n").join("").split(";");
+        program.fragCode = fragCode.split("\n").join("").split(";");
 
         if (!this.getProgramParameter(program, this.LINK_STATUS)) {
             const info = this.getProgramInfoLog(program);
@@ -129,10 +135,17 @@ const WebGLUtils = {
                 let endStr;
                 if (c.indexOf(s) > -1) {
                     startStr = c.indexOf(s);
-                    endStr = c.length;
-
-                    let resulte = c.slice(startStr + s.length + 1, endStr);
-                    return resulte;
+                    if (c.indexOf("[") > -1) {
+                        endStr = c.indexOf("[");
+                    } else {
+                        endStr = c.length;
+                    }
+                    let result = c.slice(startStr + s.length + 1, endStr);
+                    let strings = result.split(",")
+                    strings.forEach((e, i) => {
+                        strings[i] = strings[i].trim()
+                    })
+                    return strings;
                 }
 
             }
@@ -145,25 +158,14 @@ const WebGLUtils = {
 
 
             for (let ik = 0; ik < codeVertFragLocations.length; ik++) {
-                let locStrA = null
-                let locStrU = null
+
                 glslAttriTypeStrings.forEach(e => {
-
-                    locStrA = getLocString(codeVertFragLocations[ik], e)
-
-                    if (locStrA) {
-                        attribLocations.push(locStrA)
-                    }
+                    let locStrA = getLocString(codeVertFragLocations[ik], e)
+                    if (locStrA) attribLocations.push(...locStrA)
                 })
-
-
                 glslUniTypeStrings.forEach(e => {
-
-                    locStrU = getLocString(codeVertFragLocations[ik], e)
-
-                    if (locStrU) {
-                        uniformLocations.push(locStrU)
-                    }
+                    let locStrU = getLocString(codeVertFragLocations[ik], e)
+                    if (locStrU) uniformLocations.push(...locStrU)
                 })
 
 
@@ -174,6 +176,7 @@ const WebGLUtils = {
                 program[e] = gl.getAttribLocation(program, e);
             })
             uniformLocations.forEach(e => {
+
                 program[e] = gl.getUniformLocation(program, e);
             })
 
@@ -182,16 +185,24 @@ const WebGLUtils = {
             return program;
         }
 
+
+        this.useProgram(program)
+
         return program;
     },
 
-    impelementBuffers: function (args) {
-        args.forEach((e) => {
-            this.bindBuffer(this.ARRAY_BUFFER, e.buffer);
-            this.vertexAttribPointer(e.loc, e.num, this.FLOAT, false, 0, 0);
-            this.enableVertexAttribArray(e.loc);
-        });
-
+    implementBuffer: function (buffer) {
+        if (Array.isArray(buffer)) {
+            buffer.forEach((e) => {
+                this.bindBuffer(this.ARRAY_BUFFER, e.buffer);
+                this.vertexAttribPointer(e.loc, e.num, this.FLOAT, false, 0, 0);
+                this.enableVertexAttribArray(e.loc);
+            });
+        } else {
+            this.bindBuffer(this.ARRAY_BUFFER, buffer.buffer);
+            this.vertexAttribPointer(buffer.loc, buffer.num, this.FLOAT, false, 0, 0);
+            this.enableVertexAttribArray(buffer.loc);
+        }
     },
 
 
@@ -208,13 +219,26 @@ const WebGLUtils = {
 
     },
 
-    background: function (color_data) {
-        if (gl.isEnabled(gl.BLEND)) {
-            this.canvas.style.backgroundColor = `rgba( ${color_data[0]} , ${color_data[1]} , ${color_data[2]} ,1.0)`;
+    background: function (r, g = r, b = r, a = 255) {
+
+        let red, blue, green, alpha;
+        if (this.isEnabled(this.BLEND)) {
+            this.canvas.style.backgroundColor = `rgba( ${r} , ${g} , ${b} ,1.0)`;
         } else {
             this.canvas.style.backgroundColor = `rgba( ${0} , ${0} , ${0} ,1.0)`;
         }
-        this.clearColor(color_data[0] / 255, color_data[1] / 255, color_data[2] / 255, 1.0);
+        if (r.length == 3 || r.length == 4) {
+            red = r[0] / 255;
+            blue = r[1] / 255;
+            green = r[2] / 255;
+            r.length == 4 ? alpha = r[3] / 255 : alpha = 1;
+        } else {
+            red = r / 255;
+            blue = g / 255;
+            green = b / 255;
+            alpha = a / 255;
+        }
+        this.clearColor(red, blue, green, alpha);
         this.clear(this.COLOR_BUFFER_BIT | this.DEPTH_BUFFER_BIT);
     },
 
@@ -321,7 +345,7 @@ const WebGLUtils = {
             } else if (step == 4) {
                 vert[jkm] = vert[jkm] / width * 2 - 1;
                 vert[jkm + 1] = vert[jkm + 1] / height * 2 - 1;
-                vert[jkm + 2] = vert[jkm + 2] / ( width * 2) - 1;
+                vert[jkm + 2] = vert[jkm + 2] / (width * 2) - 1;
             }
 
 
@@ -344,31 +368,41 @@ const WebGLUtils = {
 
 };
 
-Object.keys(WebGLUtils).forEach(e => {
-    WebGL2RenderingContext.prototype[e] = WebGLUtils[e];
-    WebGLRenderingContext.prototype[e] = WebGLUtils[e];
+Object.keys(WebGLContextUtils).forEach(e => {
+    WebGL2RenderingContext.prototype[e] = WebGLContextUtils[e];
+    WebGLRenderingContext.prototype[e] = WebGLContextUtils[e];
+})
+
+
+const WebGLProgramUtils = {
+    updateProgramWebGL: function () {
+
+    }
+}
+
+
+Object.keys(WebGLProgramUtils).forEach(e => {
+    WebGLProgram.prototype[e] = WebGLProgramUtils[e];
+
 })
 
 
 
+window.addEventListener("load", function () {
+    if (window["main"]) {
+        try {
+            window["main"]()
+
+        } catch (e) {
 
 
-function mainRunner() {
-    try {
-        window["main"]()
-        cancelAnimationFrame(mainRunner)
-    } catch (e) {
-        if (e.message == "window.main is not a function") {
-            requestAnimationFrame(mainRunner)
-        } else {
-          
             let err;
             if (e.stack) {
                 let stack = e.stack;
 
-                let indexStr0 = stack.search("at mainRunner");
+                let indexStr0 = stack.search("EventListener");
                 if (indexStr0 < 0) {
-                    indexStr0 = stack.search("mainRunner");
+                    indexStr0 = stack.search("EventListener");
                 }
                 stack = stack.slice(0, indexStr0);
 
@@ -396,13 +430,13 @@ function mainRunner() {
                 err = e;
             }
 
-            cancelAnimationFrame(mainRunner)
             throw err;
 
-        }
-    }
-} mainRunner();
 
+        }
+
+    }
+})
 
 
 
