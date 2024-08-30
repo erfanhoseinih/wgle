@@ -1,6 +1,8 @@
-# WebGL Utils
+# wgle
 
-WebGL Utils a helper library for WebGL. this will save your time! <br> 
+![alt text](http://url/to/wgle.jpg)
+
+wgle is a WebGL Utils and helper library for WebGL. this will save your time! <br> 
 and it keeps you away from repetitive operations like any other library.
 
 The main goal is to help the evolution of webgl without adding something useless in the form of a few but useful functions.
