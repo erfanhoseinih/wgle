@@ -1,7 +1,21 @@
-# wgle
 
+<<<<<<< HEAD
 <img src="./wgle.jpg" width="300" style="" />
 
+=======
+<p align="center" >
+  
+  <img src="wgle.jpg" width="300"   />
+  
+  <h1 align="center">
+   wgle
+  </h1>
+</p>
+
+
+
+ 
+>>>>>>> ffec45b94cda7ee808cd02a8b5d78488aac3ed6c
 
 wgle is a WebGL Utils and helper library for WebGL. this will save your time! <br> 
 and it keeps you away from repetitive operations like any other library.
