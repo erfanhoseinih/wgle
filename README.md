@@ -1,6 +1,7 @@
 # wgle
 
-![alt text](http://url/to/wgle.jpg)
+<img src="./wgle.jpg" width="300" style="" />
+
 
 wgle is a WebGL Utils and helper library for WebGL. this will save your time! <br> 
 and it keeps you away from repetitive operations like any other library.

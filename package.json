@@ -1,14 +1,17 @@
 {
-  "name": "@erfanhoseinih/webglutils",
+  "name": "@erfanhoseinih/wgle",
   "version": "1.0.3",
   "description": "webgl utils",
-  "main": "webglutils.js",
+  "main": "wgle.js",
+  "bin": {
+    "wgle": "./bin/wgle-cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/erfannhoseini/webglutils"
+    "url": "https://github.com/erfannhoseini/wgle"
   },
   "keywords": [
     "webgl",
@@ -17,6 +20,6 @@
   "author": "erfanhoseini",
   "license": "MIT",
   "dependencies": {
-    "@erfanhoseinih/webglutils": "^1.0.3"
+    "@erfanhoseinih/wgle": "^1.0.3"
   }
 }
