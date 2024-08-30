@@ -1,11 +1,15 @@
-# wgle
 
-<p align="center >
+<p align="center" >
+  
   <img src="wgle.jpg" width="300"   />
-  <p>
+  
+  <h1 align="center">
    wgle
-  </p>
+  </h1>
 </p>
+
+
+
  
 
 wgle is a WebGL Utils and helper library for WebGL. this will save your time! <br> 
