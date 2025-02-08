@@ -1,6 +1,6 @@
 {
   "name": "wgle",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "webgl utils",
   "main": "wgle.js",
   "scripts": {
