@@ -10,6 +10,9 @@
     "type": "git",
     "url": "https://github.com/erfanhoseinih/wgle"
   },
+  "bin": {
+    "wgle-cli": "./bin/wgle-cli.js"
+  },
   "keywords": [
     "webgl",
     "utils"
