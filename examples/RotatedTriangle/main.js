@@ -1,4 +1,3 @@
-
 let vs = `
 attribute vec4 a_Position;
 uniform float u_CosB, u_SinB;
@@ -18,36 +17,30 @@ void main(){
 
 let gl, program;
 function main() {
+  let canvas = document.createElement("canvas");
+  document.body.appendChild(canvas);
+  gl = canvas.createWebGlContext();
+  program = gl.createProgram(vs, fs);
+  program.getProgramLocations();
 
-   let canvas = document.createElement("canvas");
-   document.body.appendChild(canvas);
-   gl = canvas.createWebGlContext();
-   program = gl.createProgramWebGL(vs, fs);
-   program.getProgramLocations();
+  gl.background(0);
 
- 
-   gl.background(0);
+  let buffer = initVertexBuffers();
 
-   var ANGLE = 90.0; 
-   var radian = Math.PI * ANGLE / 180.0;  
-   var cosB = Math.cos(radian);
-   var sinB = Math.sin(radian);
- 
-   gl.uniform1f(program.u_CosB, cosB);
-   gl.uniform1f(program.u_SinB, sinB);
- 
+  var ANGLE = 90.0;
+  var radian = (Math.PI * ANGLE) / 180.0;
+  var cosB = Math.cos(radian);
+  var sinB = Math.sin(radian);
 
+  gl.uniform1f(program.u_CosB, cosB);
+  gl.uniform1f(program.u_SinB, sinB);
 
-   let buf = initVertexBuffers();
-   gl.implementBuffer(buf);
-   gl.drawArrays(gl.TRIANGLES, 0, buf.len);
+  gl.bindBuffers(buffer);
 
+  gl.draw(buffer, gl.TRIANGLES);
 }
 
-
 function initVertexBuffers() {
-   var vertices = new Float32Array([
-      0, 0.5, -0.5, -0.5, 0.5, -0.5
-   ]);
-   return gl.createArrayBuffer(program.a_Position, vertices, 2, gl.FLOAT);
+  var vertices = new Float32Array([0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+  return [gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT)];
 }

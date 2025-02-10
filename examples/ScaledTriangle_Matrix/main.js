@@ -1,4 +1,3 @@
-
 let vs = `
 attribute vec4 a_Position;
 uniform mat4 u_xformMatrix;
@@ -15,40 +14,45 @@ void main(){
 
 let gl, program;
 function main() {
+  let canvas = document.createElement("canvas");
+  document.body.appendChild(canvas);
+  gl = canvas.createWebGlContext();
+  program = gl.createProgram(vs, fs);
+  program.getProgramLocations();
 
-   let canvas = document.createElement("canvas");
-   document.body.appendChild(canvas);
-   gl = canvas.createWebGlContext();
-   program = gl.createProgramWebGL(vs, fs);
-   program.getProgramLocations();
+  gl.background(0);
 
-   gl.background(0);
+  var Sx = 1.0,
+    Sy = 1.5,
+    Sz = 1.0;
+  var xformMatrix = new Float32Array([
+    Sx,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    Sy,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    Sz,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+  ]);
+  gl.uniformMatrix4fv(program.u_xformMatrix, false, xformMatrix);
 
+  let buf = initVertexBuffers();
 
+  gl.bindBuffers(buf);
 
-   var Sx = 1.0, Sy = 1.5, Sz = 1.0;
-   var xformMatrix = new Float32Array([
-      Sx, 0.0, 0.0, 0.0,
-      0.0, Sy, 0.0, 0.0,
-      0.0, 0.0, Sz, 0.0,
-      0.0, 0.0, 0.0, 1.0
-   ]);
-   gl.uniformMatrix4fv(program.u_xformMatrix, false, xformMatrix);
-
-
-
-
-   let buf = initVertexBuffers();
-   gl.implementBuffer(buf);
-   gl.drawArrays(gl.TRIANGLES, 0, buf.len);
-
-
+  gl.draw(buf, gl.TRIANGLES);
 }
 
-
 function initVertexBuffers() {
-   var vertices = new Float32Array([
-      0, 0.5, -0.5, -0.5, 0.5, -0.5
-   ]);
-   return gl.createArrayBuffer(program.a_Position, vertices, 2, gl.FLOAT);
+  var vertices = new Float32Array([0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+  return [gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT)];
 }

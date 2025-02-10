@@ -1,11 +1,9 @@
-
 let vs = `
 attribute vec4 a_Position;
 void main(){
    gl_Position = a_Position;
    gl_PointSize = 10.0;
 }
-
 `;
 
 let fs = `
@@ -18,22 +16,22 @@ void main(){
 
 let gl, program;
 function main() {
+  let canvas = document.createElement("canvas");
+  document.body.appendChild(canvas);
+  gl = canvas.createWebGlContext();
+  program = gl.createProgram(vs, fs);
+  program.getProgramLocations();
 
-   let canvas = document.createElement("canvas");
-   document.body.appendChild(canvas)
-   gl = canvas.createWebGlContext();
-   program = gl.createProgramWebGL(vs, fs)
-   program.getProgramLocations()
-   gl.background(0)
-   let buf = initVertexBuffers();
-   gl.implementBuffer(buf)
-   gl.drawArrays(gl.POINTS, 0, buf.len)
+  gl.background(0);
+
+  let points = createPoints();
+
+  gl.bindBuffers(points);
+
+  gl.draw(points, gl.POINTS);
 }
 
-
-function initVertexBuffers() {
-   var vertices = new Float32Array([
-      0, 0.5, -0.5, -0.5, 0.5, -0.5
-   ]);
-   return gl.createArrayBuffer(program.a_Position, vertices, 2, gl.FLOAT);
+function createPoints() {
+  var vertices = new Float32Array([0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+  return [gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT)];
 }

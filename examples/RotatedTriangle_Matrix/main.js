@@ -19,12 +19,11 @@ function main() {
    let canvas = document.createElement("canvas");
    document.body.appendChild(canvas);
    gl = canvas.createWebGlContext();
-   program = gl.createProgramWebGL(vs, fs);
+   program = gl.createProgram(vs, fs);
    program.getProgramLocations();
 
    gl.background(0);
-
-
+ 
 
    var ANGLE = 90.0;
    var radian = Math.PI * ANGLE / 180.0; 
@@ -35,15 +34,14 @@ function main() {
       0.0, 0.0, 1.0, 0.0,
       0.0, 0.0, 0.0, 1.0
    ]);
+   
    gl.uniformMatrix4fv(program.u_xformMatrix, false, xformMatrix);
 
+   let buffer = initVertexBuffers();
 
-
-
-   let buf = initVertexBuffers();
-   gl.implementBuffer(buf);
-   gl.drawArrays(gl.TRIANGLES, 0, buf.len);
-
+   gl.bindBuffers(buffer);
+   
+   gl.draw(buffer, gl.TRIANGLES);
 
 }
 
@@ -52,5 +50,5 @@ function initVertexBuffers() {
    var vertices = new Float32Array([
       0, 0.5, -0.5, -0.5, 0.5, -0.5
    ]);
-   return gl.createArrayBuffer(program.a_Position, vertices, 2, gl.FLOAT);
+   return [gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT)];
 }

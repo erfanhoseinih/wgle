@@ -1,4 +1,5 @@
 "use strict";
+
 let width, height;
 
 HTMLCanvasElement.prototype.createWebGlContext = function (...args) {
@@ -49,7 +50,7 @@ HTMLCanvasElement.prototype.createWebGlContext = function (...args) {
 
   return context;
 };
-let glslAttriTypeStrings = [
+const glslAttriTypeStrings = [
   "attribute bool",
   "attribute int",
   "attribute float",
@@ -70,7 +71,7 @@ let glslAttriTypeStrings = [
   "attribute mat3",
   "attribute mat4",
 ];
-let glslUniTypeStrings = [
+const glslUniTypeStrings = [
   "uniform bool",
   "uniform int",
   "uniform float",
@@ -95,8 +96,34 @@ let glslUniTypeStrings = [
   "uniform samplerCube",
 ];
 
+WebGL2RenderingContext.prototype.createProgramWebGL =
+  WebGL2RenderingContext.prototype.createProgram;
+WebGLRenderingContext.prototype.createProgramWebGL =
+  WebGLRenderingContext.prototype.createProgram;
+
+WebGL2RenderingContext.prototype.createFramebufferWebGL =
+  WebGL2RenderingContext.prototype.createFramebuffer;
+WebGLRenderingContext.prototype.createFramebufferWebGL =
+  WebGLRenderingContext.prototype.createFramebuffer;
+
+WebGL2RenderingContext.prototype.createTextureWebGL =
+  WebGL2RenderingContext.prototype.createTexture;
+WebGLRenderingContext.prototype.createTextureWebGL =
+  WebGLRenderingContext.prototype.createTexture;
+
+WebGL2RenderingContext.prototype.activeTextureWebGL =
+  WebGL2RenderingContext.prototype.activeTexture;
+WebGLRenderingContext.prototype.activeTextureWebGL =
+  WebGLRenderingContext.prototype.activeTexture;
+
+WebGL2RenderingContext.prototype.bindBufferWebGL =
+  WebGL2RenderingContext.prototype.bindBuffer;
+WebGLRenderingContext.prototype.bindBufferWebGL =
+  WebGLRenderingContext.prototype.bindBuffer;
+
 const WebGLContextUtils = {
-  createProgramWebGL: function (vertCode, fragCode) {
+  DRAW_ALL: "draw_all",
+  createProgram: function (vertCode, fragCode) {
     var vertexShader = this.createShader(this.VERTEX_SHADER);
 
     this.shaderSource(vertexShader, vertCode);
@@ -117,7 +144,7 @@ const WebGLContextUtils = {
       );
     }
 
-    let program = this.createProgram();
+    let program = this.createProgramWebGL();
     this.attachShader(program, vertexShader);
     this.attachShader(program, fragmentShader);
 
@@ -185,70 +212,90 @@ const WebGLContextUtils = {
     return program;
   },
 
-  drawBuffers: function (buffers, mode, disableImplements, disablePointers) {
-    // implement buffers
-    if (disableImplements) {
-      buffers.forEach((e) => {
-        this.implementBuffer(e);
-      });
+  draw: function (
+    buffers = [],
+    mode = this.TRIANGLES,
+    first = 0,
+    count = this.DRAW_ALL
+  ) {
+    // check buffer argument is array
+    if (!Array.isArray(buffers)) {
+      throw "first arguments is not array!";
+    } else if (buffers.length > 0) {
+      if (count == this.DRAW_ALL) {
+        count = buffers[0].length;
+      }
     }
-
-    // implement texture
-
     // draw buffers
-    this.drawArrays(mode, 0, buffers[0].len);
+    this.drawArrays(mode, first, count);
+  },
 
-    // disable and unbind buffers
-    if (disablePointers) {
-      // buffers.forEach((e) => {
-      //   gl.deleteBuffer(e.buffer);
-      // });
-      buffers.forEach((e) => {
-        this.disableVertexAttribArray(e.loc);
-      });
+  disableProgram: function (program) {
+    gl.useProgram(null);
+
+    for (let i = 0; i < gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS); i++) {
+      gl.activeTexture(gl.TEXTURE0 + i);
+      gl.bindTexture(gl.TEXTURE_2D, null);
     }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    gl.bindVertexArray?.(null);
+
+    gl.deleteProgram(program);
+
+  },
+
+  disableBuffers: function (buffers) {
+    buffers.forEach((b) => {
+      if (b instanceof WebGLTexture) {
+        gl.bindTexture(gl.TEXTURE_2D, null);
+      } else {
+        gl.disableVertexAttribArray(b.location);
+      }
+    });
+  },
+
+  deleteBuffers: function (buffers) {
+    buffers.forEach((b) => {
+      if (b instanceof WebGLTexture) {
+        gl.deleteTexture(b);
+      } else {
+        gl.deleteBuffer(b.buffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+      }
+    });
   },
   
-  disableProgramPointers: function (program){
-    let programPointers =  Object.values(program);
-    programPointers.forEach((e)=>{
-      if(Number.isInteger(e)){
-        this.disableVertexAttribArray(e);
-      }
-    })
-
-  },
-  disablePointers: function (buffers) {
-    buffers.forEach((e) => {
-      this.disableVertexAttribArray(e.loc);
+  bindBuffers: function (buffers) {
+    buffers.forEach((b) => {
+      this.bindBuffer(b);
     });
   },
 
-  implementBuffers: function (buffers) {
-    buffers.forEach((e) => {
-      this.bindBuffer(this.ARRAY_BUFFER, e.buffer);
-      this.vertexAttribPointer(e.loc, e.num, this.FLOAT, false, 0, 0);
-      this.enableVertexAttribArray(e.loc);
-    });
+  bindBuffer: function (b) {
+    if (b instanceof WebGLTexture) {
+      this.activeTexture(b);
+    } else {
+      this.bindBufferWebGL(this.ARRAY_BUFFER, b.buffer);
+      this.vertexAttribPointer(b.location, b.num, this.FLOAT, false, 0, 0);
+      this.enableVertexAttribArray(b.location);
+    }
   },
 
-  implementBuffer: function (buffer) {
-    this.bindBuffer(this.ARRAY_BUFFER, buffer.buffer);
-    this.vertexAttribPointer(buffer.loc, buffer.num, this.FLOAT, false, 0, 0);
-    this.enableVertexAttribArray(buffer.loc);
-  },
-
-  createAttribObject: function (loc, data, num, type) {
+  createAttribObject: function (location, data, num, type) {
     let obj = new Object();
     obj.data = new Float32Array(data);
-    obj.loc = loc;
+    obj.location = location;
     obj.num = num;
     obj.type = type;
-    obj.len = parseInt(data.length / num);
+    obj.length = parseInt(data.length / num);
     obj.buffer = null;
     obj.initBuffer = function (gl) {
       this.buffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+      gl.bindBufferWebGL(gl.ARRAY_BUFFER, this.buffer);
       gl.bufferData(gl.ARRAY_BUFFER, this.data, gl.STATIC_DRAW);
     };
     return obj;
@@ -298,20 +345,20 @@ const WebGLContextUtils = {
     return attribObject;
   },
 
-  createAttribBuffer: function (loc, data, num, type) {
+  createAttribBuffer: function (location, data, num, type) {
     let obj = new Object();
     obj.buffer = this.createBuffer();
     obj.data = new Float32Array(data);
-    this.bindBuffer(this.ARRAY_BUFFER, obj.buffer);
+    this.bindBufferWebGL(this.ARRAY_BUFFER, obj.buffer);
     this.bufferData(
       this.ARRAY_BUFFER,
       new Float32Array(data),
       this.STATIC_DRAW
     );
-    obj.loc = loc;
+    obj.location = location;
     obj.num = num;
     obj.type = type;
-    obj.len = parseInt(data.length / num);
+    obj.length = parseInt(data.length / num);
     return obj;
   },
 
@@ -321,7 +368,7 @@ const WebGLContextUtils = {
     }
   },
 
-  background: function (r, g = r, b = r, a = 255) {
+  background: function (r = 0, g = r, b = r, a = 255) {
     let red, blue, green, alpha;
     if (this.isEnabled(this.BLEND)) {
       this.canvas.style.backgroundColor = `rgba( ${r} , ${g} , ${b} ,1.0)`;
@@ -352,86 +399,136 @@ const WebGLContextUtils = {
       this.viewport(arguments[1], arguments[2], arguments[3], arguments[4]);
     }
   },
+  createFramebuffer: function (options = {}) {
+    let {
+      width = 1000,
+      height = 1000,
+      useDepthTexture = false,
+      useStencil = false,
+      numColorAttachments = 1,
+    } = options;
 
-  createFramebufferObject: function (fbo_w, fbo_h) {
-    var frameBuffer, texture, depthBuffer;
-    let OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT;
-    var error = function () {
-      if (frameBuffer) this.deleteFramebuffer(frameBuffer);
-      if (texture) this.deleteTexture(texture);
-      if (depthBuffer) this.deleteRenderbuffer(depthBuffer);
-      return null;
-    };
+    let frameBuffer = this.createFramebufferWebGL();
+    this.bindFramebuffer(this.FRAMEBUFFER, frameBuffer);
 
-    if (!fbo_h && !fbo_w) {
-      OFFSCREEN_WIDTH = width;
-      OFFSCREEN_HEIGHT = height;
-    } else if (!fbo_h) {
-      OFFSCREEN_WIDTH = OFFSCREEN_HEIGHT = fbo_w;
-    } else {
-      OFFSCREEN_WIDTH = fbo_w;
-      OFFSCREEN_HEIGHT = fbo_h;
+    frameBuffer.textures = [];
+
+    for (let i = 0; i < numColorAttachments; i++) {
+      let texture = this.createTexture();
+      this.bindTexture(this.TEXTURE_2D, texture);
+      this.texImage2D(
+        this.TEXTURE_2D,
+        0,
+        this.RGBA,
+        width,
+        height,
+        0,
+        this.RGBA,
+        this.UNSIGNED_BYTE,
+        null
+      );
+      this.texParameteri(
+        this.TEXTURE_2D,
+        this.TEXTURE_MIN_FILTER,
+        this.NEAREST
+      );
+      this.texParameteri(
+        this.TEXTURE_2D,
+        this.TEXTURE_MAG_FILTER,
+        this.NEAREST
+      );
+      this.texParameteri(
+        this.TEXTURE_2D,
+        this.TEXTURE_WRAP_S,
+        this.CLAMP_TO_EDGE
+      );
+      this.texParameteri(
+        this.TEXTURE_2D,
+        this.TEXTURE_WRAP_T,
+        this.CLAMP_TO_EDGE
+      );
+      this.framebufferTexture2D(
+        this.FRAMEBUFFER,
+        this.COLOR_ATTACHMENT0 + i,
+        this.TEXTURE_2D,
+        texture,
+        0
+      );
+      frameBuffer.textures.push(texture);
     }
 
-    frameBuffer = this.createFramebuffer();
-    texture = this.createTexture();
+    let depthStencilBuffer;
+    if (useDepthTexture) {
+      let depthTexture = this.createTexture();
+      this.bindTexture(this.TEXTURE_2D, depthTexture);
+      this.texImage2D(
+        this.TEXTURE_2D,
+        0,
+        this.DEPTH_COMPONENT24,
+        width,
+        height,
+        0,
+        this.DEPTH_COMPONENT,
+        this.UNSIGNED_INT,
+        null
+      );
+      this.texParameteri(
+        this.TEXTURE_2D,
+        this.TEXTURE_MIN_FILTER,
+        this.NEAREST
+      );
+      this.texParameteri(
+        this.TEXTURE_2D,
+        this.TEXTURE_MAG_FILTER,
+        this.NEAREST
+      );
+      this.texParameteri(
+        this.TEXTURE_2D,
+        this.TEXTURE_WRAP_S,
+        this.CLAMP_TO_EDGE
+      );
+      this.texParameteri(
+        this.TEXTURE_2D,
+        this.TEXTURE_WRAP_T,
+        this.CLAMP_TO_EDGE
+      );
+      this.framebufferTexture2D(
+        this.FRAMEBUFFER,
+        this.DEPTH_ATTACHMENT,
+        this.TEXTURE_2D,
+        depthTexture,
+        0
+      );
+      frameBuffer.depthTexture = depthTexture;
+    } else {
+      depthStencilBuffer = this.createRenderbuffer();
+      this.bindRenderbuffer(this.RENDERBUFFER, depthStencilBuffer);
+      this.renderbufferStorage(
+        this.RENDERBUFFER,
+        useStencil ? this.DEPTH_STENCIL : this.DEPTH_COMPONENT16,
+        width,
+        height
+      );
+      this.framebufferRenderbuffer(
+        this.FRAMEBUFFER,
+        useStencil ? this.DEPTH_STENCIL_ATTACHMENT : this.DEPTH_ATTACHMENT,
+        this.RENDERBUFFER,
+        depthStencilBuffer
+      );
+    }
 
-    this.bindTexture(this.TEXTURE_2D, texture);
-    this.texImage2D(
-      this.TEXTURE_2D,
-      0,
-      this.RGBA,
-      OFFSCREEN_WIDTH,
-      OFFSCREEN_HEIGHT,
-      0,
-      this.RGBA,
-      this.UNSIGNED_BYTE,
-      null
-    );
+    if (numColorAttachments > 1) {
+      let drawBuffers = [];
+      for (let i = 0; i < numColorAttachments; i++) {
+        drawBuffers.push(this.COLOR_ATTACHMENT0 + i);
+      }
+      this.drawBuffers(drawBuffers);
+    }
 
-    this.texParameteri(
-      this.TEXTURE_2D,
-      this.TEXTURE_WRAP_S,
-      this.CLAMP_TO_EDGE
-    );
-    this.texParameteri(
-      this.TEXTURE_2D,
-      this.TEXTURE_WRAP_T,
-      this.CLAMP_TO_EDGE
-    );
-    this.texParameteri(this.TEXTURE_2D, this.TEXTURE_MIN_FILTER, this.NEAREST);
-    this.texParameteri(this.TEXTURE_2D, this.TEXTURE_MAG_FILTER, this.NEAREST);
-
-    frameBuffer.texture = texture;
-
-    depthBuffer = this.createRenderbuffer();
-    this.bindRenderbuffer(this.RENDERBUFFER, depthBuffer);
-    this.renderbufferStorage(
-      this.RENDERBUFFER,
-      this.DEPTH_COMPONENT16,
-      OFFSCREEN_WIDTH,
-      OFFSCREEN_HEIGHT
-    );
-
-    this.bindFramebuffer(this.FRAMEBUFFER, frameBuffer);
-    this.framebufferTexture2D(
-      this.FRAMEBUFFER,
-      this.COLOR_ATTACHMENT0,
-      this.TEXTURE_2D,
-      texture,
-      0
-    );
-    this.framebufferRenderbuffer(
-      this.FRAMEBUFFER,
-      this.DEPTH_ATTACHMENT,
-      this.RENDERBUFFER,
-      depthBuffer
-    );
-
-    var e = this.checkFramebufferStatus(this.FRAMEBUFFER);
-    if (this.FRAMEBUFFER_COMPLETE !== e) {
-      console.log("Frame buffer object is incomplete: " + e.toString());
-      return error();
+    let status = this.checkFramebufferStatus(this.FRAMEBUFFER);
+    if (status !== this.FRAMEBUFFER_COMPLETE) {
+      console.error("Framebuffer is incomplete: ", status);
+      return null;
     }
 
     this.bindFramebuffer(this.FRAMEBUFFER, null);
@@ -456,6 +553,23 @@ const WebGLContextUtils = {
     } else {
       return true;
     }
+  },
+
+  createTexture: function (image, textureLocation, texUnit = 0) {
+    const texture = gl.createTextureWebGL();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    texture.texUnit = texUnit;
+    texture.location = textureLocation;
+    return texture;
+  },
+
+  activeTexture: function (texture) {
+    gl.activeTextureWebGL(gl.TEXTURE0 + texture.texUnit);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.uniform1i(texture.location, texture.texUnit);
   },
 
   normalizeVertexForglsl: function (v, step) {
@@ -502,47 +616,93 @@ Object.keys(WebGLProgramUtils).forEach((e) => {
 });
 
 window.addEventListener("load", function () {
-  if (window["main"]) {
-    try {
-      window["main"]();
-    } catch (e) {
-      let err;
-      if (e.stack) {
-        let stack = e.stack;
+  try {
+    window["main"]();
+  } catch (e) {
+    let err;
+    if (e.stack) {
+      let stack = e.stack;
 
-        let indexStr0 = stack.search("EventListener");
-        if (indexStr0 < 0) {
-          indexStr0 = stack.search("EventListener");
-        }
-        stack = stack.slice(0, indexStr0);
+      let indexStr0 = stack.search("EventListener");
+      if (indexStr0 < 0) {
+        indexStr0 = stack.search("EventListener");
+      }
+      stack = stack.slice(0, indexStr0);
 
-        let linenumber;
-        let indexStr = e.stack.search(".js");
-        let filename = e.stack.slice(0, e.stack.indexOf("\n"));
-        while (
-          !(filename[indexStr] == "/" || filename[indexStr] == "(") &&
-          indexStr >= 0
-        ) {
-          indexStr--;
-        }
-
-        filename = filename.slice(indexStr + 1, filename.length);
-
-        indexStr = filename.search(":");
-        linenumber = filename.slice(indexStr + 1, filename.length);
-        filename = filename.slice(0, indexStr);
-
-        indexStr = linenumber.search(":");
-        linenumber = linenumber.slice(0, indexStr);
-
-        err = new Error(e.message, filename, linenumber);
-        err.stack = stack;
-      } else {
-        err = e;
+      let linenumber;
+      let indexStr = e.stack.search(".js");
+      let filename = e.stack.slice(0, e.stack.indexOf("\n"));
+      while (
+        !(filename[indexStr] == "/" || filename[indexStr] == "(") &&
+        indexStr >= 0
+      ) {
+        indexStr--;
       }
 
-      throw err;
+      filename = filename.slice(indexStr + 1, filename.length);
+
+      indexStr = filename.search(":");
+      linenumber = filename.slice(indexStr + 1, filename.length);
+      filename = filename.slice(0, indexStr);
+
+      indexStr = linenumber.search(":");
+      linenumber = linenumber.slice(0, indexStr);
+
+      err = new Error(e.message, filename, linenumber);
+      err.stack = stack;
+    } else {
+      err = e;
     }
+
+    throw err;
+  }
+
+  try {
+    if (window["animation"]) {
+      let animationContent = window["animation"];
+      window["animation"] = () => {
+        animationContent();
+        requestAnimationFrame(animation);
+      };
+      window["animation"]();
+    }
+  } catch (e) {
+    let err;
+    if (e.stack) {
+      let stack = e.stack;
+
+      let indexStr0 = stack.search("EventListener");
+      if (indexStr0 < 0) {
+        indexStr0 = stack.search("EventListener");
+      }
+      stack = stack.slice(0, indexStr0);
+
+      let linenumber;
+      let indexStr = e.stack.search(".js");
+      let filename = e.stack.slice(0, e.stack.indexOf("\n"));
+      while (
+        !(filename[indexStr] == "/" || filename[indexStr] == "(") &&
+        indexStr >= 0
+      ) {
+        indexStr--;
+      }
+
+      filename = filename.slice(indexStr + 1, filename.length);
+
+      indexStr = filename.search(":");
+      linenumber = filename.slice(indexStr + 1, filename.length);
+      filename = filename.slice(0, indexStr);
+
+      indexStr = linenumber.search(":");
+      linenumber = linenumber.slice(0, indexStr);
+
+      err = new Error(e.message, filename, linenumber);
+      err.stack = stack;
+    } else {
+      err = e;
+    }
+
+    throw err;
   }
 });
 
@@ -593,11 +753,8 @@ async function loadShader(fileName) {
       let data = await loadFile(headers[i].headerFileName);
       shaderString = shaderString.replace(headers[i].headerString, "\n");
       shaderString = insertAt(shaderString, data, headers[i].startHeader);
-
-      // console.log(shaderString);
     }
 
-    // console.log(headers);
     return shaderString;
   };
 
@@ -619,4 +776,13 @@ async function loadShader(fileName) {
   data = loadOtherGlslHeader(data);
 
   return data;
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    let img = document.createElement("img");
+    img.src = src;
+    img.onload = () => resolve(img);
+    img.onerror = (err) => reject(err);
+  });
 }

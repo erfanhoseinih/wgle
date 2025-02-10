@@ -1,4 +1,3 @@
-
 let vs = `
 attribute vec4 a_Position;
 void main(){
@@ -18,22 +17,25 @@ void main(){
 
 let gl, program;
 function main() {
+  let canvas = document.createElement("canvas");
+  document.body.appendChild(canvas);
+  gl = canvas.createWebGlContext();
 
-   let canvas = document.createElement("canvas");
-   document.body.appendChild(canvas)
-   gl = canvas.createWebGlContext();
-   program = gl.createProgramWebGL(vs, fs)
-   program.getProgramLocations()
-   gl.background(0)
-   let buf = initVertexBuffers();
-   gl.implementBuffer(buf)
-   gl.drawArrays(gl.TRIANGLES, 0, buf.len)
+  program = gl.createProgram(vs, fs);
+  program.getProgramLocations();
+
+  gl.background(0);
+
+  let triangle = createTriangle();
+
+  gl.bindBuffers(triangle);
+
+  gl.draw(triangle, gl.TRIANGLES);
+
+  gl.disableBuffers(triangle);
 }
 
-
-function initVertexBuffers() {
-   var vertices = new Float32Array([
-      0, 0.5, -0.5, -0.5, 0.5, -0.5
-   ]);
-   return gl.createArrayBuffer(program.a_Position, vertices, 2, gl.FLOAT);
+function createTriangle() {
+  var vertices = new Float32Array([0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+  return [gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT)];
 }

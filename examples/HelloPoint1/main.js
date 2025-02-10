@@ -1,4 +1,3 @@
-
 let vs = `
 void main(){
    gl_Position = vec4(0.0,0.0,0.0,1.0);
@@ -13,10 +12,11 @@ void main(){
 `;
 
 function main() {
-    let canvas = document.createElement("canvas");
-    document.body.appendChild(canvas)
-    gl = canvas.createWebGlContext();
-    program = gl.createProgramWebGL(vs, fs)
-    gl.background(0)
-    gl.drawArrays(gl.POINTS, 0, 1);
+  let canvas = document.createElement("canvas");
+  document.body.appendChild(canvas);
+  gl = canvas.createWebGlContext();
+  program = gl.createProgram(vs, fs);
+  gl.background(0);
+ 
+  gl.draw([], gl.POINTS, 0, 1);
 }

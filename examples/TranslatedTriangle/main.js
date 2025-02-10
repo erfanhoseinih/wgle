@@ -1,4 +1,3 @@
-
 let vs = `
 attribute vec4 a_Position;
 uniform vec4 u_Translation;
@@ -15,31 +14,25 @@ void main(){
 
 let gl, program;
 function main() {
+  let canvas = document.createElement("canvas");
+  document.body.appendChild(canvas);
+  gl = canvas.createWebGlContext();
+  program = gl.createProgram(vs, fs);
+  program.getProgramLocations();
 
-   let canvas = document.createElement("canvas");
-   document.body.appendChild(canvas);
-   gl = canvas.createWebGlContext();
-   program = gl.createProgramWebGL(vs, fs);
-   program.getProgramLocations();
+  gl.background(0);
 
- 
-   gl.background(0);
+  var Tx = 0.4,
+    Ty = 0.4,
+    Tz = 0.0;
+  gl.uniform4f(program.u_Translation, Tx, Ty, Tz, 0.0);
 
-   
-   var Tx = 0.5, Ty = 0.5, Tz = 0.0;
-   gl.uniform4f(program.u_Translation, Tx, Ty, Tz, 0.0);
-
-
-   let buf = initVertexBuffers();
-   gl.implementBuffer(buf);
-   gl.drawArrays(gl.TRIANGLES, 0, buf.len);
-
+  let buf = initVertexBuffers();
+  gl.bindBuffers(buf);
+  gl.draw(buf, gl.TRIANGLES);
 }
 
-
 function initVertexBuffers() {
-   var vertices = new Float32Array([
-      0, 0.5, -0.5, -0.5, 0.5, -0.5
-   ]);
-   return gl.createArrayBuffer(program.a_Position, vertices, 2, gl.FLOAT);
+  var vertices = new Float32Array([0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+  return [gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT)];
 }
