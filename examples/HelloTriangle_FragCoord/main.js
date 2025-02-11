@@ -24,8 +24,8 @@ function main() {
 
   gl.background(0);
 
-  gl.uniform1f(program.u_Width, width);
-  gl.uniform1f(program.u_Height, height);
+  gl.uniform1f(program.u_Width, gl.width);
+  gl.uniform1f(program.u_Height, gl.height);
 
   // create data and buffers
   let triangle = createTriangle();

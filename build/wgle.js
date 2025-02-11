@@ -1,7 +1,6 @@
 "use strict";
 
-let width, height;
-
+ 
 HTMLCanvasElement.prototype.createWebGlContext = function (...args) {
   var width_Context, height_Context;
   var webgl_versions = [
@@ -45,8 +44,9 @@ HTMLCanvasElement.prototype.createWebGlContext = function (...args) {
       break;
     }
   }
-  width = this.width;
-  height = this.height;
+ 
+  context.width = this.width;
+  context.height = this.height;
 
   return context;
 };
@@ -244,7 +244,6 @@ const WebGLContextUtils = {
     gl.bindVertexArray?.(null);
 
     gl.deleteProgram(program);
-
   },
 
   disableBuffers: function (buffers) {
@@ -268,7 +267,7 @@ const WebGLContextUtils = {
       }
     });
   },
-  
+
   bindBuffers: function (buffers) {
     buffers.forEach((b) => {
       this.bindBuffer(b);
@@ -279,6 +278,9 @@ const WebGLContextUtils = {
     if (b instanceof WebGLTexture) {
       this.activeTexture(b);
     } else {
+      if (b.buffer == null) {
+        b.initBuffer(this);
+      }
       this.bindBufferWebGL(this.ARRAY_BUFFER, b.buffer);
       this.vertexAttribPointer(b.location, b.num, this.FLOAT, false, 0, 0);
       this.enableVertexAttribArray(b.location);
@@ -313,24 +315,25 @@ const WebGLContextUtils = {
       let sameLocNum = 0;
       for (let i = 0; i < o0.length; i++) {
         for (let j = 0; j < o1.length; j++) {
-          if (o0[i].loc == o1[j].loc) {
+          if (o0[i].location == o1[j].location) {
             sameLocNum++;
           }
         }
       }
-
+      
       if (sameLocNum != maxLenLoc) {
         console.error("Objects not same location");
       }
     };
 
     checkSameObject(o0, o1);
+    // const obj0Len = o0.length;
     for (let i = 0; i < o0.length; i++) {
       for (let j = 0; j < o1.length; j++) {
-        if (o0[i].loc == o1[j].loc) {
+        if (o0[i].location == o1[j].location) {
           o0[i].data = new Float32Array([...o0[i].data, ...o1[j].data]);
-          o0[i].len = parseInt(o0[i].data.length / o0[i].num);
-        }
+          o0[i].length = parseInt(o0[i].data.length / o0[i].num);
+        } 
       }
     }
 
@@ -401,8 +404,8 @@ const WebGLContextUtils = {
   },
   createFramebuffer: function (options = {}) {
     let {
-      width = 1000,
-      height = 1000,
+      width = this.width,
+      height = this.height,
       useDepthTexture = false,
       useStencil = false,
       numColorAttachments = 1,
@@ -414,7 +417,7 @@ const WebGLContextUtils = {
     frameBuffer.textures = [];
 
     for (let i = 0; i < numColorAttachments; i++) {
-      let texture = this.createTexture();
+      let texture = this.createTextureWebGL();
       this.bindTexture(this.TEXTURE_2D, texture);
       this.texImage2D(
         this.TEXTURE_2D,
@@ -459,7 +462,7 @@ const WebGLContextUtils = {
 
     let depthStencilBuffer;
     if (useDepthTexture) {
-      let depthTexture = this.createTexture();
+      let depthTexture = this.createTextureWebGL();
       this.bindTexture(this.TEXTURE_2D, depthTexture);
       this.texImage2D(
         this.TEXTURE_2D,
@@ -556,11 +559,30 @@ const WebGLContextUtils = {
   },
 
   createTexture: function (image, textureLocation, texUnit = 0) {
-    const texture = gl.createTextureWebGL();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    let texture;
+    if (
+      image instanceof HTMLImageElement ||
+      image instanceof HTMLCanvasElement ||
+      image instanceof HTMLVideoElement ||
+      image instanceof ImageBitmap
+    ) {
+      texture = gl.createTextureWebGL();
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        image
+      );
+    } else if (image instanceof WebGLTexture) {
+   
+      texture = image;
+    }
+
     texture.texUnit = texUnit;
     texture.location = textureLocation;
     return texture;
