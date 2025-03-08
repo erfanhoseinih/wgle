@@ -1,6 +1,5 @@
 "use strict";
 
- 
 HTMLCanvasElement.prototype.createWebGlContext = function (...args) {
   var width_Context, height_Context;
   var webgl_versions = [
@@ -44,7 +43,7 @@ HTMLCanvasElement.prototype.createWebGlContext = function (...args) {
       break;
     }
   }
- 
+
   context.width = this.width;
   context.height = this.height;
 
@@ -234,12 +233,12 @@ const WebGLContextUtils = {
     gl.useProgram(null);
 
     for (let i = 0; i < gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS); i++) {
-      gl.activeTexture(gl.TEXTURE0 + i);
-      gl.bindTexture(gl.TEXTURE_2D, null);
+      // gl.activeTextureWebGL(gl.TEXTURE0 + i);
+      // gl.bindBufferWebGL(gl.TEXTURE_2D, null);
     }
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+    gl.bindBufferWebGL(gl.ARRAY_BUFFER, null);
+    gl.bindBufferWebGL(gl.ELEMENT_ARRAY_BUFFER, null);
 
     gl.bindVertexArray?.(null);
 
@@ -262,8 +261,8 @@ const WebGLContextUtils = {
         gl.deleteTexture(b);
       } else {
         gl.deleteBuffer(b.buffer);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+        gl.bindBufferWebGL(gl.ARRAY_BUFFER, null);
+        gl.bindBufferWebGL(gl.ELEMENT_ARRAY_BUFFER, null);
       }
     });
   },
@@ -289,7 +288,7 @@ const WebGLContextUtils = {
 
   createAttribObject: function (location, data, num, type) {
     let obj = new Object();
-    obj.data = new Float32Array(data);
+    obj.data = data;
     obj.location = location;
     obj.num = num;
     obj.type = type;
@@ -298,7 +297,11 @@ const WebGLContextUtils = {
     obj.initBuffer = function (gl) {
       this.buffer = gl.createBuffer();
       gl.bindBufferWebGL(gl.ARRAY_BUFFER, this.buffer);
-      gl.bufferData(gl.ARRAY_BUFFER, this.data, gl.STATIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(this.data),
+        gl.STATIC_DRAW
+      );
     };
     return obj;
   },
@@ -320,7 +323,7 @@ const WebGLContextUtils = {
           }
         }
       }
-      
+
       if (sameLocNum != maxLenLoc) {
         console.error("Objects not same location");
       }
@@ -331,9 +334,9 @@ const WebGLContextUtils = {
     for (let i = 0; i < o0.length; i++) {
       for (let j = 0; j < o1.length; j++) {
         if (o0[i].location == o1[j].location) {
-          o0[i].data = new Float32Array([...o0[i].data, ...o1[j].data]);
+          o0[i].data.push(...o1[j].data);
           o0[i].length = parseInt(o0[i].data.length / o0[i].num);
-        } 
+        }
       }
     }
 
@@ -351,7 +354,7 @@ const WebGLContextUtils = {
   createAttribBuffer: function (location, data, num, type) {
     let obj = new Object();
     obj.buffer = this.createBuffer();
-    obj.data = new Float32Array(data);
+    obj.data = data;
     this.bindBufferWebGL(this.ARRAY_BUFFER, obj.buffer);
     this.bufferData(
       this.ARRAY_BUFFER,
@@ -566,20 +569,19 @@ const WebGLContextUtils = {
       image instanceof HTMLVideoElement ||
       image instanceof ImageBitmap
     ) {
-      texture = gl.createTextureWebGL();
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
+      texture = this.createTextureWebGL();
+      this.bindTexture(this.TEXTURE_2D, texture);
+      this.pixelStorei(this.UNPACK_FLIP_Y_WEBGL, 1);
+      this.texParameteri(this.TEXTURE_2D, this.TEXTURE_MIN_FILTER, this.LINEAR);
+      this.texImage2D(
+        this.TEXTURE_2D,
         0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
+        this.RGBA,
+        this.RGBA,
+        this.UNSIGNED_BYTE,
         image
       );
     } else if (image instanceof WebGLTexture) {
-   
       texture = image;
     }
 
@@ -587,11 +589,27 @@ const WebGLContextUtils = {
     texture.location = textureLocation;
     return texture;
   },
-
   activeTexture: function (texture) {
-    gl.activeTextureWebGL(gl.TEXTURE0 + texture.texUnit);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.uniform1i(texture.location, texture.texUnit);
+    this.activeTextureWebGL(this.TEXTURE0 + texture.texUnit);
+    this.bindTexture(this.TEXTURE_2D, texture);
+    this.uniform1i(texture.location, texture.texUnit);
+  },
+
+  resizeCanvas: function (w, h) {
+    this.canvas.width = w;
+    this.canvas.height = h;
+    this.width = w;
+    this.height = h;
+    this.viewport(0, 0, w, h);
+  },
+
+  saveCanvas: function (name) {
+    const link = document.createElement("a");
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.href = this.canvas.toDataURL("image/jpeg");
+    link.download = name;
+    link.click();
   },
 
   normalizeVertexForglsl: function (v, step) {
@@ -638,45 +656,47 @@ Object.keys(WebGLProgramUtils).forEach((e) => {
 });
 
 window.addEventListener("load", function () {
-  try {
-    window["main"]();
-  } catch (e) {
-    let err;
-    if (e.stack) {
-      let stack = e.stack;
+  if (window["main"]) {
+    try {
+      window["main"]();
+    } catch (e) {
+      let err;
+      if (e.stack) {
+        let stack = e.stack;
 
-      let indexStr0 = stack.search("EventListener");
-      if (indexStr0 < 0) {
-        indexStr0 = stack.search("EventListener");
+        let indexStr0 = stack.search("EventListener");
+        if (indexStr0 < 0) {
+          indexStr0 = stack.search("EventListener");
+        }
+        stack = stack.slice(0, indexStr0);
+
+        let linenumber;
+        let indexStr = e.stack.search(".js");
+        let filename = e.stack.slice(0, e.stack.indexOf("\n"));
+        while (
+          !(filename[indexStr] == "/" || filename[indexStr] == "(") &&
+          indexStr >= 0
+        ) {
+          indexStr--;
+        }
+
+        filename = filename.slice(indexStr + 1, filename.length);
+
+        indexStr = filename.search(":");
+        linenumber = filename.slice(indexStr + 1, filename.length);
+        filename = filename.slice(0, indexStr);
+
+        indexStr = linenumber.search(":");
+        linenumber = linenumber.slice(0, indexStr);
+
+        err = new Error(e.message, filename, linenumber);
+        err.stack = stack;
+      } else {
+        err = e;
       }
-      stack = stack.slice(0, indexStr0);
 
-      let linenumber;
-      let indexStr = e.stack.search(".js");
-      let filename = e.stack.slice(0, e.stack.indexOf("\n"));
-      while (
-        !(filename[indexStr] == "/" || filename[indexStr] == "(") &&
-        indexStr >= 0
-      ) {
-        indexStr--;
-      }
-
-      filename = filename.slice(indexStr + 1, filename.length);
-
-      indexStr = filename.search(":");
-      linenumber = filename.slice(indexStr + 1, filename.length);
-      filename = filename.slice(0, indexStr);
-
-      indexStr = linenumber.search(":");
-      linenumber = linenumber.slice(0, indexStr);
-
-      err = new Error(e.message, filename, linenumber);
-      err.stack = stack;
-    } else {
-      err = e;
+      throw err;
     }
-
-    throw err;
   }
 
   try {
