@@ -131,15 +131,16 @@ const WebGLContextUtils = {
     this.shaderSource(fragmentShader, fragCode);
     this.compileShader(fragmentShader);
 
-    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+    if (!this.getShaderParameter(vertexShader, this.COMPILE_STATUS)) {
       throw (
-        ("Vertex shader compilation error:", gl.getShaderInfoLog(vertexShader))
+        ("Vertex shader compilation error:",
+        this.getShaderInfoLog(vertexShader))
       );
     }
-    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+    if (!this.getShaderParameter(fragmentShader, this.COMPILE_STATUS)) {
       throw (
         ("Fragment shader compilation error:",
-        gl.getShaderInfoLog(fragmentShader))
+        this.getShaderInfoLog(fragmentShader))
       );
     }
 
@@ -537,9 +538,9 @@ const WebGLContextUtils = {
       return null;
     }
 
-    this.bindFramebuffer(this.FRAMEBUFFER, null);
-    this.bindTexture(this.TEXTURE_2D, null);
-    this.bindRenderbuffer(this.RENDERBUFFER, null);
+    // this.bindFramebuffer(this.FRAMEBUFFER, null);
+    // this.bindTexture(this.TEXTURE_2D, null);
+    // this.bindRenderbuffer(this.RENDERBUFFER, null);
 
     return frameBuffer;
   },
