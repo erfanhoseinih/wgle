@@ -22,7 +22,7 @@ function main() {
   gl = canvas.createWebGlContext();
 
   program = gl.createProgram(vs, fs);
-  program.getProgramLocations();
+ 
 
   gl.background(0);
 
@@ -35,5 +35,5 @@ function main() {
 
 function createTriangle() {
   var vertices = new Float32Array([0, 0.5, -0.5, -0.5, 0.5, -0.5]);
-  return [gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT)];
+  return [gl.createAttribObject(vertices,program.a_Position,  2, gl.FLOAT)];
 }

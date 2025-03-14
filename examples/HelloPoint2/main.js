@@ -16,9 +16,7 @@ function main() {
   let canvas = document.createElement("canvas");
   document.body.appendChild(canvas);
   gl = canvas.createWebGlContext();
-
   program = gl.createProgram(vs, fs);
-  program.getProgramLocations();
 
   gl.background(0);
   gl.vertexAttrib3f(program.a_Position, 0.0, 0.0, 0.0);

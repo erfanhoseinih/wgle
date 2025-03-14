@@ -157,55 +157,51 @@ const WebGLContextUtils = {
       throw `Could not compile WebGL program. \n\n${info}`;
     }
 
-    WebGLProgram.prototype.getProgramLocations = function () {
-      var getLocString = (c, s) => {
-        let startStr;
-        let endStr;
-        if (c.indexOf(s) > -1) {
-          startStr = c.indexOf(s);
-          if (c.indexOf("[") > -1) {
-            endStr = c.indexOf("[");
-          } else {
-            endStr = c.length;
-          }
-          let result = c.slice(startStr + s.length + 1, endStr);
-          let strings = result.split(",");
-          strings.forEach((e, i) => {
-            strings[i] = strings[i].trim();
-          });
-          return strings;
+    var getLocString = (c, s) => {
+      let startStr;
+      let endStr;
+      if (c.indexOf(s) > -1) {
+        startStr = c.indexOf(s);
+        if (c.indexOf("[") > -1) {
+          endStr = c.indexOf("[");
+        } else {
+          endStr = c.length;
         }
-      };
-
-      let codeVertFragLocations = vertCode.concat(fragCode);
-      codeVertFragLocations = codeVertFragLocations
-        .split("\n")
-        .join("")
-        .split(";");
-
-      let attribLocations = [];
-      let uniformLocations = [];
-
-      for (let ik = 0; ik < codeVertFragLocations.length; ik++) {
-        glslAttriTypeStrings.forEach((e) => {
-          let locStrA = getLocString(codeVertFragLocations[ik], e);
-          if (locStrA) attribLocations.push(...locStrA);
+        let result = c.slice(startStr + s.length + 1, endStr);
+        let strings = result.split(",");
+        strings.forEach((e, i) => {
+          strings[i] = strings[i].trim();
         });
-        glslUniTypeStrings.forEach((e) => {
-          let locStrU = getLocString(codeVertFragLocations[ik], e);
-          if (locStrU) uniformLocations.push(...locStrU);
-        });
+        return strings;
       }
-
-      attribLocations.forEach((e) => {
-        program[e] = gl.getAttribLocation(program, e);
-      });
-      uniformLocations.forEach((e) => {
-        program[e] = gl.getUniformLocation(program, e);
-      });
-
-      return program;
     };
+
+    let codeVertFragLocations = vertCode.concat(fragCode);
+    codeVertFragLocations = codeVertFragLocations
+      .split("\n")
+      .join("")
+      .split(";");
+
+    let attribLocations = [];
+    let uniformLocations = [];
+
+    for (let ik = 0; ik < codeVertFragLocations.length; ik++) {
+      glslAttriTypeStrings.forEach((e) => {
+        let locStrA = getLocString(codeVertFragLocations[ik], e);
+        if (locStrA) attribLocations.push(...locStrA);
+      });
+      glslUniTypeStrings.forEach((e) => {
+        let locStrU = getLocString(codeVertFragLocations[ik], e);
+        if (locStrU) uniformLocations.push(...locStrU);
+      });
+    }
+
+    attribLocations.forEach((e) => {
+      program[e] = this.getAttribLocation(program, e);
+    });
+    uniformLocations.forEach((e) => {
+      program[e] = this.getUniformLocation(program, e);
+    });
 
     this.useProgram(program);
 
@@ -231,27 +227,27 @@ const WebGLContextUtils = {
   },
 
   disableProgram: function (program) {
-    gl.useProgram(null);
+    this.useProgram(null);
 
-    for (let i = 0; i < gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS); i++) {
+    for (let i = 0; i < this.getParameter(this.MAX_TEXTURE_IMAGE_UNITS); i++) {
       // gl.activeTextureWebGL(gl.TEXTURE0 + i);
       // gl.bindBufferWebGL(gl.TEXTURE_2D, null);
     }
 
-    gl.bindBufferWebGL(gl.ARRAY_BUFFER, null);
-    gl.bindBufferWebGL(gl.ELEMENT_ARRAY_BUFFER, null);
+    this.bindBufferWebGL(this.ARRAY_BUFFER, null);
+    this.bindBufferWebGL(this.ELEMENT_ARRAY_BUFFER, null);
 
-    gl.bindVertexArray?.(null);
+    this.bindVertexArray?.(null);
 
-    gl.deleteProgram(program);
+    this.deleteProgram(program);
   },
 
   disableBuffers: function (buffers) {
     buffers.forEach((b) => {
       if (b instanceof WebGLTexture) {
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        this.bindTexture(this.TEXTURE_2D, null);
       } else {
-        gl.disableVertexAttribArray(b.location);
+        this.disableVertexAttribArray(b.location);
       }
     });
   },
@@ -259,11 +255,11 @@ const WebGLContextUtils = {
   deleteBuffers: function (buffers) {
     buffers.forEach((b) => {
       if (b instanceof WebGLTexture) {
-        gl.deleteTexture(b);
+        this.deleteTexture(b);
       } else {
-        gl.deleteBuffer(b.buffer);
-        gl.bindBufferWebGL(gl.ARRAY_BUFFER, null);
-        gl.bindBufferWebGL(gl.ELEMENT_ARRAY_BUFFER, null);
+        this.deleteBuffer(b.buffer);
+        this.bindBufferWebGL(this.ARRAY_BUFFER, null);
+        this.bindBufferWebGL(this.ELEMENT_ARRAY_BUFFER, null);
       }
     });
   },
@@ -287,7 +283,7 @@ const WebGLContextUtils = {
     }
   },
 
-  createAttribObject: function (location, data, num, type) {
+  createAttribObject: function (data, location, num, type) {
     let obj = new Object();
     obj.data = data;
     obj.location = location;
@@ -352,7 +348,7 @@ const WebGLContextUtils = {
     return attribObject;
   },
 
-  createAttribBuffer: function (location, data, num, type) {
+  createAttribBuffer: function (data, location, num, type) {
     let obj = new Object();
     obj.buffer = this.createBuffer();
     obj.data = data;
@@ -401,7 +397,7 @@ const WebGLContextUtils = {
     if (fbo_gl == undefined && fbo_gl != null) {
       throw new SyntaxError("fbo is not selected");
     }
-    this.bindFramebuffer(gl.FRAMEBUFFER, fbo_gl);
+    this.bindFramebuffer(this.FRAMEBUFFER, fbo_gl);
     if (arguments.length > 1) {
       this.viewport(arguments[1], arguments[2], arguments[3], arguments[4]);
     }
@@ -523,22 +519,14 @@ const WebGLContextUtils = {
         depthStencilBuffer
       );
     }
-
-    if (numColorAttachments > 1) {
-      let drawBuffers = [];
-      for (let i = 0; i < numColorAttachments; i++) {
-        drawBuffers.push(this.COLOR_ATTACHMENT0 + i);
-      }
-      this.drawBuffers(drawBuffers);
-    }
-
+ 
     let status = this.checkFramebufferStatus(this.FRAMEBUFFER);
     if (status !== this.FRAMEBUFFER_COMPLETE) {
       console.error("Framebuffer is incomplete: ", status);
       return null;
     }
 
-    // this.bindFramebuffer(this.FRAMEBUFFER, null);
+    this.bindFramebuffer(this.FRAMEBUFFER, null);
     // this.bindTexture(this.TEXTURE_2D, null);
     // this.bindRenderbuffer(this.RENDERBUFFER, null);
 

@@ -19,7 +19,6 @@ function main() {
   document.body.appendChild(canvas);
   gl = canvas.createWebGlContext();
   program = gl.createProgram(vs, fs);
-  program.getProgramLocations();
 
   gl.background(0);
 
@@ -32,11 +31,10 @@ function main() {
 
 function createPoints() {
   var vertices = new Float32Array([0, 0.5, -0.5, -0.5, 0.5, -0.5]);
-
   var sizes = new Float32Array([10.0, 20.0, 30.0]);
 
   return [
-    gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT),
-    gl.createAttribBuffer(program.a_PointSize, sizes, 1, gl.FLOAT),
+    gl.createAttribObject(vertices, program.a_Position, 2, gl.FLOAT),
+    gl.createAttribObject(sizes, program.a_PointSize, 1, gl.FLOAT),
   ];
 }

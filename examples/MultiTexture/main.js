@@ -28,7 +28,6 @@ async function main() {
   document.body.appendChild(canvas);
   gl = canvas.createWebGlContext();
   program = gl.createProgram(vs, fs);
-  program.getProgramLocations();
 
   gl.background(0);
 
@@ -49,8 +48,8 @@ function initRectImages(image0, image1) {
   var texCoords = new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]);
 
   return [
-    gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT),
-    gl.createAttribBuffer(program.a_TexCoord, texCoords, 2, gl.FLOAT),
+    gl.createAttribObject(vertices, program.a_Position, 2, gl.FLOAT),
+    gl.createAttribObject(texCoords, program.a_TexCoord, 2, gl.FLOAT),
     gl.createTexture(image0, program.u_Sampler0, 0),
     gl.createTexture(image1, program.u_Sampler1, 1),
   ];

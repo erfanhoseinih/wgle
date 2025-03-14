@@ -18,7 +18,6 @@ function main() {
   document.body.appendChild(canvas);
   gl = canvas.createWebGlContext();
   program = gl.createProgram(vs, fs);
-  program.getProgramLocations();
 
   gl.background(0);
 
@@ -28,7 +27,7 @@ function main() {
   gl.uniformMatrix4fv(program.u_ModelMatrix, false, modelMatrix.elements);
 
   let buffer = initVertexBuffers();
-  
+
   gl.bindBuffers(buffer);
 
   gl.draw(buffer, gl.TRIANGLES);
@@ -36,5 +35,5 @@ function main() {
 
 function initVertexBuffers() {
   var vertices = new Float32Array([0, 0.5, -0.5, -0.5, 0.5, -0.5]);
-  return [gl.createAttribBuffer(program.a_Position, vertices, 2, gl.FLOAT)];
+  return [gl.createAttribObject(vertices, program.a_Position, 2, gl.FLOAT)];
 }

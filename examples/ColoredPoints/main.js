@@ -19,7 +19,6 @@ function main() {
   document.body.appendChild(canvas);
   gl = canvas.createWebGlContext();
   program = gl.createProgram(vs, fs);
-  program.getProgramLocations();
   gl.background(0);
   canvas.onmousedown = function (ev) {
     click(ev, gl, canvas, program.a_Position, program.u_FragColor);
